@@ -68,10 +68,9 @@ class DefaultController extends Controller
         else{
             $media = new Media();
             $media->setPath($this->decodeImg64($request->request->get('media')));
-            $media->setCreatedAt(new \DateTime());
-            $media->setUpdatedAt(new \DateTime());
 
             $user = new User();
+            var_dump($request->request);
             $user->setFirstName($request->request->get('prenom'));
             $user->setLastName($request->request->get('nom'));
             $user->setUsername($request->request->get('username'));
@@ -79,8 +78,6 @@ class DefaultController extends Controller
             $user->setEmail($request->request->get('email'));
             $user->setPassword($request->request->get('mdp'));
             $user->setMedia($media);
-            $user->setCreatedAt(new \DateTime());
-            $user->setUpdatedAt(new \DateTime());
 
             $this->em()->persist($media);
             $this->em()->persist($user);
@@ -104,14 +101,10 @@ class DefaultController extends Controller
         $quiz = new Quiz();
         $quiz->setName($request->request->get('name'));
         $quiz->setUser($user);
-        $quiz->setCreatedAt(new \DateTime());
-        $quiz->setUpdatedAt(new \DateTime());
 
         if(!empty($request->request->get('media'))) {
             $media = new Media();
             $media->setPath($this->decodeImg64($request->request->get('media')));
-            $media->setCreatedAt(new \DateTime());
-            $media->setUpdatedAt(new \DateTime());
             $quiz->setMedia($media);
 
             $this->em()->persist($media);
