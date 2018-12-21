@@ -18,7 +18,7 @@ class DefaultController extends Controller
      */
     public function loginAction(Request $request)
     {
-    	$user = $this->em()->getRepository('QuizzyBundle:User')->findOneBy(["username" => $request->request->get('username'), "password" => $request->request->get('mdp')]);
+        $user = $this->em()->getRepository('QuizzyBundle:User')->findOneBy(["username" => $request->request->get('username'), "password" => $request->request->get('mdp')]);
 
         if ($user) {
             $res = [
@@ -32,8 +32,6 @@ class DefaultController extends Controller
                 "email" => $user->getEmail(),
                 "media" => $user->getMedia() ? base64_encode(file_get_contents($user->getMedia()->getPath())) : null,
             ];
-            $res["friendList"] = $this->getFriendsList($user);
-
             return new JsonResponse($res, 200);
         }
         else {
@@ -51,26 +49,24 @@ class DefaultController extends Controller
 
         $emailExist = $this->em()->getRepository('QuizzyBundle:User')->findOneBy(["email" => $request->request->get('email')]);
 
-        if($usernameExist) {
+        if ($usernameExist) {
             $res = [
                 "status" => false,
                 "error"  => "username"
             ];
             return new JsonResponse($res, 200);
         }
-        elseif($emailExist) {
+        elseif ($emailExist) {
             $res = [
                 "status" => false,
                 "error"  => "email"
             ];
             return new JsonResponse($res, 200);
-        }
-        else{
+        } else {
             $media = new Media();
             $media->setPath($this->decodeImg64($request->request->get('media')));
 
             $user = new User();
-            var_dump($request->request);
             $user->setFirstName($request->request->get('prenom'));
             $user->setLastName($request->request->get('nom'));
             $user->setUsername($request->request->get('username'));
@@ -102,7 +98,7 @@ class DefaultController extends Controller
         $quiz->setName($request->request->get('name'));
         $quiz->setUser($user);
 
-        if(!empty($request->request->get('media'))) {
+        if (!empty($request->request->get('media'))) {
             $media = new Media();
             $media->setPath($this->decodeImg64($request->request->get('media')));
             $quiz->setMedia($media);
@@ -128,28 +124,6 @@ class DefaultController extends Controller
         file_put_contents($path, $image_base64);
         
         return $path;
-    }
-
-    /*
-     * Retourne la liste d'amis d'une utilisateur
-    */
-    private function getFriendsList(User $user)
-    {
-        $friends = [];
-        foreach ($user->getFriendsList() as $friend) {
-            $data = [
-                "id" => $friend->getId(),
-                "firstName" => $friend->getFirstName(),
-                "lastName" => $friend->getLastName(),
-                "username" => $friend->getUsername(),
-                "birthDate" => ["year" => (int)$friend->getBirthDate()->format("Y"), "month" => (int)$friend->getBirthDate()->format("m"), "day" => (int)$friend->getBirthDate()->format("d")],
-                "email" => $friend->getEmail(),
-                "media" => $friend->getMedia() ? base64_encode(file_get_contents($friend->getMedia()->getPath())) : null,
-            ];
-            array_push($friends, $data);
-        }
-
-        return $friends;
     }
 
     private function em(){
