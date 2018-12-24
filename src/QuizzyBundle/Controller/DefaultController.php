@@ -9,7 +9,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use QuizzyBundle\Entity\User;
 use QuizzyBundle\Entity\Media;
-use QuizzyBundle\Entity\Quiz;
+use QuizzyBundle\Service\ImageService;
+
 
 class DefaultController extends Controller
 {
@@ -34,8 +35,7 @@ class DefaultController extends Controller
                 "media" => $user->getMedia() ? $user->getMedia()->getPath() : null,
             ];
             return new JsonResponse($res, 200);
-        }
-        else {
+        } else {
             $res = ["status" => false];
             return new JsonResponse($res, 200);
         }
@@ -46,26 +46,25 @@ class DefaultController extends Controller
      */
     public function inscriptionAction(Request $request)
     {
+        $imageService  = $this->get(ImageService::REFERENCE);
         $usernameExist = $this->em()->getRepository('QuizzyBundle:User')->findOneBy(["username" => $request->request->get('username')]);
-
-        $emailExist = $this->em()->getRepository('QuizzyBundle:User')->findOneBy(["email" => $request->request->get('email')]);
+        $emailExist    = $this->em()->getRepository('QuizzyBundle:User')->findOneBy(["email" => $request->request->get('email')]);
 
         if ($usernameExist) {
             $res = [
                 "status" => false,
-                "error"  => "username"
+                "error" => "username"
             ];
             return new JsonResponse($res, 200);
-        }
-        elseif ($emailExist) {
+        } elseif ($emailExist) {
             $res = [
                 "status" => false,
-                "error"  => "email"
+                "error" => "email"
             ];
             return new JsonResponse($res, 200);
         } else {
             $media = new Media();
-            $media->setPath($this->saveImage($request->request->get('media'), "_user_profil.jpeg"));
+            $media->setPath($imageService->saveImage($request->request->get('media'), "_user_profil.jpeg"));
 
             $user = new User();
             $user->setFirstName($request->request->get('prenom'));
@@ -82,128 +81,15 @@ class DefaultController extends Controller
 
             $res = [
                 "status" => true,
-                "id"     => $user->getId(),
-                "media"  => $media->getPath() 
+                "id" => $user->getId(),
+                "media" => $media->getPath()
             ];
             return new JsonResponse($res, 200);
         }
     }
 
-    /**
-     * @Route("/{user}/quiz/{finished}", requirements={"user" = "\d+"})
-     */
-    public function getQuizAction(Request $request, $user, $finished)
+    private function em()
     {
-        $user    = $this->em()->getRepository('QuizzyBundle:User')->find($user);
-        $allQuiz = $this->em()->getRepository('QuizzyBundle:Quiz')->findBy(["user" => $user]);
-        $res     = [];
-        foreach ($allQuiz as $quiz) {
-            $add = null;
-            if ($finished) {
-                $quiz->getIsValidated() != null ? $add = $quiz : "";
-            } else {
-                $quiz->getIsValidated() == null ? $add = $quiz : "";
-            }
-
-            if ($add != null) {
-                $tab = [
-                    "id"         => $quiz->getId(),
-                    "name"       => $quiz->getName(),
-                    "popularity" => $quiz->getPopularity() != null ? $quiz->getPopularity() : null,
-                    "media"      => $quiz->getMedia() ? $quiz->getMedia()->getPath() : null
-                ];
-                if ($quiz->getIsValidated() != null) {
-                    $tab["isValidated"] = [
-                        "year"  => (int)$user->getBirthDate()->format("Y"),
-                        "month" => (int)$user->getBirthDate()->format("m"),
-                        "day"   => (int)$user->getBirthDate()->format("d")
-                    ];
-                }
-                array_push($res, $tab);
-            }
-        }
-
-        return new JsonResponse($res, 200);
-    }
-
-    /**
-     * @Route("/{user}/quiz/new", requirements={"user" = "\d+"})
-     */
-    public function newQuizAction(Request $request, $user)
-    {
-        $user = $this->em()->getRepository('QuizzyBundle:User')->find($user);
-
-        $quiz = new Quiz();
-        $quiz->setName($request->request->get('name'));
-        $quiz->setUser($user);
-
-        if (!empty($request->request->get('media'))) {
-            $media = new Media();
-            $media->setPath($this->saveImage($request->request->get('media'), "_quiz_img.jpeg"));
-            $quiz->setMedia($media);
-
-            $this->em()->persist($media);
-        }
-
-        $this->em()->persist($quiz);
-        $this->em()->flush();
-
-        $res = [
-            "id"    => $quiz->getId(),
-            "media" => $quiz->getMedia() != null ? $quiz->getMedia()->getPath() : null
-        ];        
-        return new JsonResponse($res, 200);
-    }
-
-    /**
-     * @Route("/quiz/edit/{quiz}", requirements={"quiz" = "\d+"})
-     */
-    public function setQuizAction(Request $request, $quiz) // revoir ici pour le edit/new
-    {
-        $quiz = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
-        
-        if ($quiz->getMedia()) {// on delete l'image si il y a en
-            unlink($quiz->getMedia()->getPath());
-            $this->em()->remove($quiz->getMedia());
-        }
-
-        $quiz->setMedia(null);
-        $quiz->setName($request->request->get('name'));
-
-        if (!empty($request->request->get('media'))) {
-            $media = new Media();
-            $media->setPath($this->saveImage($request->request->get('media'), "_quiz_img.jpeg"));
-            $quiz->setMedia($media);
-
-            $this->em()->persist($media);
-        }
-
-        $this->em()->persist($quiz);
-        $this->em()->flush();
-
-        $res = [
-            "media" => $quiz->getMedia() != null ? $quiz->getMedia()->getPath() : null
-        ];        
-        return new JsonResponse($res, 200);
-    }
-
-    /*
-     * Decode et sauvegarde l'image dans le dossier upload/image
-     * Retourne le path de l'image
-    */
-    private function saveImage($base64, $name)
-    {
-        $imageBase64 = base64_decode($base64);
-        $nameFile    = "upload/image/" . uniqid() . $name;
-        file_put_contents(
-            $this->get('kernel')->getRootDir()."/../web/" . $nameFile,
-            $imageBase64
-        );
-        
-        return $nameFile;
-    }
-
-    private function em(){
-    	return $this->getDoctrine()->getEntityManager();
+        return $this->getDoctrine()->getEntityManager();
     }
 }
