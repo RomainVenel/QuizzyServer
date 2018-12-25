@@ -46,6 +46,4 @@ class ImageService
         }
         $this->em->remove($media);   
     }
-
-
 }

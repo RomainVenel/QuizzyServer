@@ -19,6 +19,8 @@ class Version20181223235508 extends AbstractMigration
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE part CHANGE description description VARCHAR(255) DEFAULT NULL');
+        $this->addSql('INSERT INTO type_question VALUES(1, "QCU")');
+        $this->addSql('INSERT INTO type_question VALUES(2, "QCM")');
     }
 
     /**
