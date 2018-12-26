@@ -36,7 +36,7 @@ class Answer
     private $isCorrect;
 
     /**
-     * @ORM\ManyToOne(targetEntity="QuizzyBundle\Entity\Question")
+     * @ORM\ManyToOne(targetEntity="QuizzyBundle\Entity\Question", inversedBy="answers",)
      * @ORM\JoinColumn(name="question_id", referencedColumnName="id", nullable=false)
      */
     private $question;

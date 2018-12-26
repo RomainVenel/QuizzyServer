@@ -54,6 +54,12 @@ class Question
     private $media;
 
     /**
+     * @var ArrayCollection|Answer[]
+     * @ORM\OneToMany(targetEntity="QuizzyBundle\Entity\Answer", mappedBy="question", fetch="EXTRA_LAZY")
+     */
+    protected $answers;
+
+    /**
      * Get id
      *
      * @return int
@@ -183,4 +189,45 @@ class Question
         return $this->media;
     }
 
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->answers = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add answer
+     *
+     * @param \QuizzyBundle\Entity\Answer $answer
+     *
+     * @return Question
+     */
+    public function addAnswer(\QuizzyBundle\Entity\Answer $answer)
+    {
+        $this->answers[] = $answer;
+
+        return $this;
+    }
+
+    /**
+     * Remove answer
+     *
+     * @param \QuizzyBundle\Entity\Answer $answer
+     */
+    public function removeAnswer(\QuizzyBundle\Entity\Answer $answer)
+    {
+        $this->answers->removeElement($answer);
+    }
+
+    /**
+     * Get answers
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getAnswers()
+    {
+        return $this->answers;
+    }
 }

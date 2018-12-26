@@ -19,8 +19,9 @@ class PartController extends Controller
      */
     public function getPartsAction(Request $request, $quiz)
     {
+        $quiz  = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
         $parts = $this->em()->getRepository('QuizzyBundle:Part')->findBy(["quiz" => $quiz]);
-        $res = [];
+        $res   = [];
 
         foreach ($parts as $part) {
             $data = [

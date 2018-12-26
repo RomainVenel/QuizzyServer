@@ -16,6 +16,41 @@ class QuestionController extends Controller
 {
 
 	/**
+     * @Route("/part/{part}", requirements={"part" = "\d+"})
+     */
+    public function getQuestionsAction(Request $request, $part)
+    {
+    	$part      = $this->em()->getRepository('QuizzyBundle:Part')->find($part);
+        $questions = $this->em()->getRepository('QuizzyBundle:Question')->findBy(["part" => $part]);
+        $res       = [];
+
+        foreach ($questions as $question) {
+            $data = [
+                "id"     => $question->getId(),
+                "name"   => $question->getName(),
+                "grade"  => $question->getMaxScore(),
+                "type"   => $question->getTypeQuestion()->getType(),
+                "media"  => $part->getMedia() != null ? $part->getMedia()->getPath() : null
+            ];
+
+            $allAnswer = [];
+            foreach ($question->getAnswers() as $answer) {
+             	$answerTab = [
+             		"id"        => $answer->getId(),
+             		"name"      => $answer->getName(),
+             		"isCorrect" => $answer->getIsCorrect()
+             	];
+            	array_push($allAnswer, $answerTab);
+            }
+
+            $data["answers"] = $allAnswer;
+            array_push($res, $data);
+        }
+
+        return new JsonResponse($res, 200);
+    }
+
+	/**
      * @Route("/part/{part}/question/new", requirements={"part" = "\d+"})
      */
     public function newQuestionAction(Request $request, $part)
