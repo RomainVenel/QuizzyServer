@@ -112,6 +112,43 @@ class QuizController extends Controller
         return new JsonResponse($res, 200);
     }
 
+    /**
+     * @Route("/quiz/{quiz}/check", requirements={"quiz" = "\d+"})
+     */
+    public function checkQuizAction(Request $request, $quiz)
+    {
+        $quiz   = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
+        $status = true;
+
+        foreach ($quiz->getParts() as $part) {
+            if (!$part->getName() || $part->getQuestions()->count() == 0) {
+                $status = false;
+                break;
+            }
+            foreach ($part->getQuestions() as $question) {
+                $oneGoodAnswer = false;
+                foreach ($question->getAnswers() as $answer) {
+                    if (!$answer->getName()) {
+                        $status = false;
+                        break;
+                    }
+                    if($answer->getIsCorrect()) {
+                        $oneGoodAnswer = true;
+                    }
+                }
+                if (!$question->getName() || $question->getAnswers()->count() == 0 || !$oneGoodAnswer) {
+                    $status = false;
+                    break;
+                }
+            }
+        }
+
+        $res = [
+            "status" => $status
+        ];
+        return new JsonResponse($res, 200);
+    }
+
     private function em()
     {
         return $this->getDoctrine()->getEntityManager();

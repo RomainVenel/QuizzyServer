@@ -36,7 +36,7 @@ class Question
     private $maxScore;
 
     /**
-     * @ORM\ManyToOne(targetEntity="QuizzyBundle\Entity\Part")
+     * @ORM\ManyToOne(targetEntity="QuizzyBundle\Entity\Part", inversedBy="questions")
      * @ORM\JoinColumn(name="part_id", referencedColumnName="id", nullable=false)
      */
     private $part;
@@ -55,7 +55,7 @@ class Question
 
     /**
      * @var ArrayCollection|Answer[]
-     * @ORM\OneToMany(targetEntity="QuizzyBundle\Entity\Answer", mappedBy="question", fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="QuizzyBundle\Entity\Answer", mappedBy="question", cascade={"remove"}, fetch="EXTRA_LAZY")
      */
     protected $answers;
 

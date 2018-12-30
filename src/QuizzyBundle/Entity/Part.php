@@ -36,7 +36,7 @@ class Part
     private $description;
 
     /**
-     * @ORM\ManyToOne(targetEntity="QuizzyBundle\Entity\Quiz")
+     * @ORM\ManyToOne(targetEntity="QuizzyBundle\Entity\Quiz", inversedBy="parts")
      * @ORM\JoinColumn(name="quiz_id", referencedColumnName="id", nullable=false)
      */
     private $quiz;
@@ -46,6 +46,12 @@ class Part
      * @ORM\JoinColumn(name="media_id", referencedColumnName="id", nullable=true)
      */
     private $media;
+
+    /**
+     * @var ArrayCollection|Question[]
+     * @ORM\OneToMany(targetEntity="QuizzyBundle\Entity\Question", mappedBy="part", fetch="EXTRA_LAZY")
+     */
+    protected $questions;
 
     /**
      * Get id
@@ -153,4 +159,45 @@ class Part
         return $this->media;
     }
 
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->questions = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add question
+     *
+     * @param \QuizzyBundle\Entity\Question $question
+     *
+     * @return Part
+     */
+    public function addQuestion(\QuizzyBundle\Entity\Question $question)
+    {
+        $this->questions[] = $question;
+
+        return $this;
+    }
+
+    /**
+     * Remove question
+     *
+     * @param \QuizzyBundle\Entity\Question $question
+     */
+    public function removeQuestion(\QuizzyBundle\Entity\Question $question)
+    {
+        $this->questions->removeElement($question);
+    }
+
+    /**
+     * Get questions
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getQuestions()
+    {
+        return $this->questions;
+    }
 }

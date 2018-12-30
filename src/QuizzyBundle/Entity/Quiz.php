@@ -55,6 +55,12 @@ class Quiz
     private $media;
 
     /**
+     * @var ArrayCollection|Part[]
+     * @ORM\OneToMany(targetEntity="QuizzyBundle\Entity\Part", mappedBy="quiz", fetch="EXTRA_LAZY")
+     */
+    protected $parts;
+
+    /**
      * Get id
      *
      * @return int
@@ -184,4 +190,45 @@ class Quiz
         return $this->media;
     }
 
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->parts = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add part
+     *
+     * @param \QuizzyBundle\Entity\Part $part
+     *
+     * @return Quiz
+     */
+    public function addPart(\QuizzyBundle\Entity\Part $part)
+    {
+        $this->parts[] = $part;
+
+        return $this;
+    }
+
+    /**
+     * Remove part
+     *
+     * @param \QuizzyBundle\Entity\Part $part
+     */
+    public function removePart(\QuizzyBundle\Entity\Part $part)
+    {
+        $this->parts->removeElement($part);
+    }
+
+    /**
+     * Get parts
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getParts()
+    {
+        return $this->parts;
+    }
 }

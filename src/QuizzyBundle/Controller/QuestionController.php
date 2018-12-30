@@ -30,7 +30,7 @@ class QuestionController extends Controller
                 "name"   => $question->getName(),
                 "grade"  => $question->getMaxScore(),
                 "type"   => $question->getTypeQuestion()->getType(),
-                "media"  => $part->getMedia() != null ? $part->getMedia()->getPath() : null
+                "media"  => $question->getMedia() != null ? $question->getMedia()->getPath() : null
             ];
 
             $allAnswer = [];
@@ -76,7 +76,7 @@ class QuestionController extends Controller
         $this->em()->persist($question);
 
         if ((int)$request->request->get('nbAnswers') > 0) {
-        	for ($i=0; $i < (int)$request->request->get('nbAnswers') ; $i++) { 
+        	for ($i = 0; $i < (int)$request->request->get('nbAnswers'); $i++) { 
         		$answer = new Answer() ;
         		$answer->setName($request->request->get('name_answer_'.$i));
         		$answer->setIsCorrect(
@@ -97,6 +97,85 @@ class QuestionController extends Controller
             "media" => $question->getMedia() != null ? $question->getMedia()->getPath() : null
         ];
         return new JsonResponse($res, 200);
+    }
+
+    /**
+     * @Route("/question/edit/{question}", requirements={"question" = "\d+"})
+     */
+    public function setQuestionAction(Request $request, $question)
+    {
+        $imageService  = $this->get(ImageService::REFERENCE);
+        $question      = $this->em()->getRepository('QuizzyBundle:Question')->find($question);
+        $typeQuestion  = $this->em()->getRepository('QuizzyBundle:TypeQuestion')->findOneBy(["type" => $request->request->get('type')]);
+
+        if ($question->getMedia()) {// on delete l'image si il y a en
+            $imageService->deleteImage($question->getMedia());
+        }
+
+        $question->setMedia(null);
+        $question->setName($request->request->get('name'));
+        $question->setMaxScore($request->request->get('grade'));
+
+        if ($question->getTypeQuestion()->getType() != $typeQuestion->getType()) {
+        	$question->setTypeQuestion($typeQuestion);
+        }
+
+        if (!empty($request->request->get('media'))) {
+            $media = new Media();
+            $media->setPath($imageService->saveImage($request->request->get('media'), "_question_img.jpeg"));
+            $question->setMedia($media);
+
+            $this->em()->persist($media);
+        }
+
+        $this->em()->persist($question);
+
+        $this->deleteAllAnswers($question);
+        if ((int)$request->request->get('nbAnswers') > 0) {
+        	for ($i = 0; $i < (int)$request->request->get('nbAnswers'); $i++) { 
+        		$answer = new Answer() ;
+        		$answer->setName($request->request->get('name_answer_'.$i));
+        		$answer->setIsCorrect(
+        			filter_var(
+        				$request->request->get('is_correct_answer_'.$i),
+        				FILTER_VALIDATE_BOOLEAN
+        			)
+        		);
+        		$answer->setQuestion($question);
+        		$this->em()->persist($answer);
+        	}
+        }
+
+        $this->em()->flush();
+
+        $res = [
+            "media" => $question->getMedia() != null ? $question->getMedia()->getPath() : null
+        ];
+        return new JsonResponse($res, 200);
+    }
+
+    /**
+     * @Route("/question/delete/{question}", requirements={"question" = "\d+"})
+     */
+    public function deleteQuestionAction(Request $request, $question)
+    {
+        $imageService  = $this->get(ImageService::REFERENCE);
+        $question      = $this->em()->getRepository('QuizzyBundle:Question')->find($question);
+
+        if ($question->getMedia()) {// on delete l'image si il y a en
+            $imageService->deleteImage($question->getMedia());
+        }
+
+        $this->em()->remove($question);
+        $this->em()->flush();
+        return new JsonResponse([], 200);
+    }
+
+    private function deleteAllAnswers(Question $question)
+    {
+    	foreach ($question->getAnswers() as $answer) {
+    		$this->em()->remove($answer);
+    	}
     }
 
     private function em()

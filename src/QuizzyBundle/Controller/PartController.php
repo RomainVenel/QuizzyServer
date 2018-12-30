@@ -110,6 +110,30 @@ class PartController extends Controller
         return new JsonResponse($res, 200);
     }
 
+    /**
+     * @Route("/part/delete/{part}", requirements={"part" = "\d+"})
+     */
+    public function deletePartAction(Request $request, $part)
+    {
+        $imageService  = $this->get(ImageService::REFERENCE);
+        $part          = $this->em()->getRepository('QuizzyBundle:Part')->find($part);
+
+        if ($part->getMedia()) {// on delete l'image si il y a en
+            $imageService->deleteImage($part->getMedia());
+        }
+
+        foreach ($part->getQuestions() as $question) {
+            if ($question->getMedia()) {
+                $imageService->deleteImage($question->getMedia());
+            }
+            $this->em()->remove($question);
+        }
+
+        $this->em()->remove($part);
+        $this->em()->flush();
+        return new JsonResponse([], 200);
+    }
+
     private function em()
     {
         return $this->getDoctrine()->getEntityManager();
