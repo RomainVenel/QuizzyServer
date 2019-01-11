@@ -143,6 +143,12 @@ class QuizController extends Controller
             }
         }
 
+        if ($status) {
+            $quiz->setIsValidated(new \DateTime());
+            $this->em()->persist($quiz);
+            $this->em()->flush();
+        }
+
         $res = [
             "status" => $status
         ];
