@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use QuizzyBundle\Entity\Media;
 use QuizzyBundle\Entity\Quiz;
 use QuizzyBundle\Service\ImageService;
+use QuizzyBundle\Service\QuizService;
 
 class QuizController extends Controller
 {
@@ -152,6 +153,33 @@ class QuizController extends Controller
         $res = [
             "status" => $status
         ];
+        return new JsonResponse($res, 200);
+    }
+
+
+    /**
+     * @Route("/quiz/{user}/created", requirements={"user" = "\d+"})
+     */
+    public function getAllMyQuizCreatedAction(Request $request, $user)
+    {
+        $quizService = $this->get(QuizService::REFERENCE);
+        $user        = $this->em()->getRepository('QuizzyBundle:User')->find($user);
+        $allQuiz     = $quizService->getAllQuizFinished($user);
+        $res         = [];
+        foreach ($allQuiz as $quiz) {
+            $tab = [
+                "id" => $quiz->getId(),
+                "name" => $quiz->getName(),
+                "popularity" => $quiz->getPopularity() != null ? $quiz->getPopularity() : null,
+                "media" => $quiz->getMedia() ? $quiz->getMedia()->getPath() : null,
+                "isValidated" => [
+                    "year" => (int)$user->getBirthDate()->format("Y"),
+                    "month" => (int)$user->getBirthDate()->format("m"),
+                    "day" => (int)$user->getBirthDate()->format("d")
+                ]
+            ];
+            array_push($res, $tab);
+        }
         return new JsonResponse($res, 200);
     }
 

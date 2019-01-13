@@ -7,3 +7,7 @@ services:
       class: QuizzyBundle\Service\ImageService
       arguments: ['@service_container', '@doctrine.orm.entity_manager']
 
+    quizzy.quiz_service:
+      class: QuizzyBundle\Service\QuizService
+      arguments: ['@doctrine.orm.entity_manager']
+
