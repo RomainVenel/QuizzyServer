@@ -24,15 +24,15 @@ class DefaultController extends Controller
 
         if ($user) {
             $res = [
-                "status" => true,
-                "id" => $user->getId(),
-                "firstName" => $user->getFirstName(),
-                "lastName" => $user->getLastName(),
-                "username" => $user->getUsername(),
-                "birthDate" => ["year" => (int)$user->getBirthDate()->format("Y"), "month" => (int)$user->getBirthDate()->format("m"), "day" => (int)$user->getBirthDate()->format("d")],
-                "password" => $user->getPassword(),
-                "email" => $user->getEmail(),
-                "media" => $user->getMedia() ? $user->getMedia()->getPath() : null,
+            "status" => true,
+            "id" => $user->getId(),
+            "firstName" => $user->getFirstName(),
+            "lastName" => $user->getLastName(),
+            "username" => $user->getUsername(),
+            "birthDate" => ["year" => (int)$user->getBirthDate()->format("Y"), "month" => (int)$user->getBirthDate()->format("m"), "day" => (int)$user->getBirthDate()->format("d")],
+            "password" => $user->getPassword(),
+            "email" => $user->getEmail(),
+            "media" => $user->getMedia() ? $user->getMedia()->getPath() : null,
             ];
             return new JsonResponse($res, 200);
         } else {
@@ -52,17 +52,19 @@ class DefaultController extends Controller
 
         if ($usernameExist) {
             $res = [
-                "status" => false,
-                "error" => "username"
+            "status" => false,
+            "error" => "username"
             ];
             return new JsonResponse($res, 200);
         } elseif ($emailExist) {
             $res = [
-                "status" => false,
-                "error" => "email"
+            "status" => false,
+            "error" => "email"
             ];
             return new JsonResponse($res, 200);
         } else {
+
+
             $media = new Media();
             $media->setPath($imageService->saveImage($request->request->get('media'), "_user_profil.jpeg"));
 
@@ -75,15 +77,30 @@ class DefaultController extends Controller
             $user->setPassword($request->request->get('password'));
             $user->setMedia($media);
 
+            $message = \Swift_Message::newInstance()
+            ->setSubject('Bienvenue sur Quizzy !')
+            ->setFrom(['quizzyAppli@gmail.com' => "Quizzy"])
+            ->setTo($user->getEmail())
+            ->setBody(
+                $this->renderView(
+                // app/Resources/views/Emails/registration.html.twig
+                    'Emails/registration.html.twig',
+                    array('user' => $user)
+                    ),
+                'text/html'
+                );
+            $this->get('mailer')->send($message);
+
             $this->em()->persist($media);
             $this->em()->persist($user);
             $this->em()->flush();
 
             $res = [
-                "status" => true,
-                "id" => $user->getId(),
-                "media" => $media->getPath()
+            "status" => true,
+            "id" => $user->getId(),
+            "media" => $media->getPath()
             ];
+
             return new JsonResponse($res, 200);
         }
     }
