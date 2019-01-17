@@ -173,9 +173,9 @@ class QuizController extends Controller
                 "popularity" => $quiz->getPopularity() != null ? $quiz->getPopularity() : null,
                 "media" => $quiz->getMedia() ? $quiz->getMedia()->getPath() : null,
                 "isValidated" => [
-                    "year" => (int)$user->getBirthDate()->format("Y"),
-                    "month" => (int)$user->getBirthDate()->format("m"),
-                    "day" => (int)$user->getBirthDate()->format("d")
+                    "year" => (int)$quiz->getIsValidated()->format("Y"),
+                    "month" => (int)$quiz->getIsValidated()->format("m"),
+                    "day" => (int)$quiz->getIsValidated()->format("d")
                 ]
             ];
             array_push($res, $tab);
