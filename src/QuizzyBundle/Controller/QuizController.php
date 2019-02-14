@@ -52,6 +52,38 @@ class QuizController extends Controller
     }
 
     /**
+     * @Route("/{user}/quiz/shared")
+     */
+    public function getQuizSharedAction(Request $request, $user)
+    {
+        $user = $this->em()->getRepository('QuizzyBundle:User')->find($user);
+        $quizShared = $user->getQuizShared();
+        $res = [];
+        foreach ($quizShared as $quiz) {
+
+            if ($quiz != null) {
+                $tab = [
+                    "id" => $quiz->getId(),
+                    "name" => $quiz->getName(),
+                    "popularity" => $quiz->getPopularity() != null ? $quiz->getPopularity() : null,
+                    "media" => $quiz->getMedia() ? $quiz->getMedia()->getPath() : null
+                ];
+                if ($quiz->getIsValidated() != null) {
+                    $tab["isValidated"] = [
+                        "year" => (int)$user->getBirthDate()->format("Y"),
+                        "month" => (int)$user->getBirthDate()->format("m"),
+                        "day" => (int)$user->getBirthDate()->format("d")
+                    ];
+                }
+                array_push($res, $tab);
+            }
+        }
+        return new JsonResponse($res, 200);
+
+    }
+
+
+    /**
      * @Route("/{user}/quiz/new", requirements={"user" = "\d+"})
      */
     public function newQuizAction(Request $request, $user)
