@@ -114,6 +114,38 @@ class QuizController extends Controller
     }
 
     /**
+     * @Route("/quiz/{quiz}/delete", requirements={"quiz" = "\d+"})
+     */
+    public function deleteQuizAction(Request $request, $quiz)
+    {
+        $quiz = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
+        $user = $this->em()->getRepository('QuizzyBundle:User')->find($quiz->getUser());
+
+        $user->removeQuizShared($quiz);
+
+        foreach ($quiz->getParts() as $part) {
+            if ($part->getMedia()) {// on delete l'image si il y en a
+                $imageService->deleteImage($part->getMedia());
+            }
+
+            foreach ($part->getQuestions() as $question) {
+                if ($question->getMedia()) {
+                    $imageService->deleteImage($question->getMedia());
+                }
+                $this->em()->remove($question);
+            }
+
+            $this->em()->remove($part);
+            $this->em()->flush();
+        }
+
+        $this->em()->remove($quiz);
+        $this->em()->flush();
+
+        return new JsonResponse('quiz deleted', 200);
+    }
+
+    /**
      * @Route("/quiz/edit/{quiz}", requirements={"quiz" = "\d+"})
      */
     public function setQuizAction(Request $request, $quiz)
