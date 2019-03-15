@@ -118,6 +118,8 @@ class QuizController extends Controller
      */
     public function deleteQuizAction(Request $request, $quiz)
     {
+        $imageService  = $this->get(ImageService::REFERENCE);
+        
         $quiz = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
         $user = $this->em()->getRepository('QuizzyBundle:User')->find($quiz->getUser());
 
