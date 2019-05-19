@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class User
 {
+    const REFERENCE = 'QuizzyBundle:User';
+
     /**
      * @var int
      *
@@ -62,15 +64,6 @@ class User
      * @ORM\Column(name="email", type="string", length=255)
      */
     private $email;
-
-    /**
-     * @ORM\ManyToMany(targetEntity="User")
-     * @ORM\JoinTable(name="friend",
-     *      joinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id")},
-     *      inverseJoinColumns={@ORM\JoinColumn(name="friend_id", referencedColumnName="id")}
-     *      )
-     **/
-    private $friendsList;
 
     /**
      * @ORM\ManyToOne(targetEntity="QuizzyBundle\Entity\Media")
@@ -245,41 +238,6 @@ class User
      */
     public function __construct()
     {
-        $this->friendsList = new \Doctrine\Common\Collections\ArrayCollection();
-    }
-
-    /**
-     * Add friendsList
-     *
-     * @param \QuizzyBundle\Entity\User $friendsList
-     *
-     * @return User
-     */
-    public function addFriendsList(\QuizzyBundle\Entity\User $friendsList)
-    {
-        $this->friendsList[] = $friendsList;
-
-        return $this;
-    }
-
-    /**
-     * Remove friendsList
-     *
-     * @param \QuizzyBundle\Entity\User $friendsList
-     */
-    public function removeFriendsList(\QuizzyBundle\Entity\User $friendsList)
-    {
-        $this->friendsList->removeElement($friendsList);
-    }
-
-    /**
-     * Get friendsList
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getFriendsList()
-    {
-        return $this->friendsList;
     }
 
     /**

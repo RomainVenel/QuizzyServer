@@ -1,13 +1,13 @@
 services:
-#    quizzy.example:
-#        class: QuizzyBundle\Example
-#        arguments: ["@service_id", "plain_value", "%parameter%"]
-
     quizzy.image_service:
       class: QuizzyBundle\Service\ImageService
       arguments: ['@service_container', '@doctrine.orm.entity_manager']
 
     quizzy.quiz_service:
       class: QuizzyBundle\Service\QuizService
+      arguments: ['@doctrine.orm.entity_manager']
+
+    quizzy.friend_service:
+      class: QuizzyBundle\Service\FriendService
       arguments: ['@doctrine.orm.entity_manager']
 

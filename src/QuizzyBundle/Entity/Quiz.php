@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Quiz
 {
+    const REFERENCE = 'QuizzyBundle:Quiz';
+
     /**
      * @var int
      *

@@ -7,7 +7,10 @@ use QuizzyBundle\Entity\User;
 
 class QuizRepository extends EntityRepository
 {
-
+    /**
+     * @param User $user
+     * @return array
+     */
 	public function getAllQuizCreated(User $user)
     {
         $dql = "
@@ -17,13 +20,26 @@ class QuizRepository extends EntityRepository
             AND q.isValidated IS NOT NULL 
         ";
 
-        $params = [
-            "user" => $user,
-        ];
+        $query = $this->_em->createQuery($dql);
+        $query->setParameter('user', $user);
+        return $query->getResult();
+    }
 
-        $query = $this->getEntityManager()->createQuery($dql);
-        $query->setParameters($params);
+    /**
+     * @param User $user
+     * @return array
+     */
+    public function getQuizNotFinished(User $user)
+    {
+        $dql = "
+            SELECT q
+            FROM QuizzyBundle:Quiz q
+            WHERE q.user = :user
+            AND q.isValidated IS NULL 
+        ";
 
+        $query = $this->_em->createQuery($dql);
+        $query->setParameter('user', $user);
         return $query->getResult();
     }
 }

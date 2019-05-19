@@ -2,6 +2,8 @@
 
 namespace QuizzyBundle\Controller;
 
+use QuizzyBundle\Entity\User;
+use QuizzyBundle\Service\FriendService;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,72 +18,29 @@ class QuizController extends Controller
 {
 
 	/**
-     * @Route("/{user}/quiz/status/{finished}")
+     * @Route("/{user}/quiz")
      */
-    public function getQuizAction(Request $request, $user, $finished)
+    public function getQuizAction(Request $request, $user)
     {
-        $user = $this->em()->getRepository('QuizzyBundle:User')->find($user);
-        $allQuiz = $this->em()->getRepository('QuizzyBundle:Quiz')->findBy(["user" => $user]);
-        $res = [];
-        foreach ($allQuiz as $quiz) {
-            $add = null;
-            if ($finished) {
-                $quiz->getIsValidated() != null ? $add = $quiz : "";
-            } else {
-                $quiz->getIsValidated() == null ? $add = $quiz : "";
-            }
+        $user = $this->em()->getRepository(User::REFERENCE)->find($user);
+        $friendService = $this->get(FriendService::REFERENCE);
+        $quizService = $this->get(QuizService::REFERENCE);
+        $quizNotFinished = [];
+        $quizShared = [];
 
-            if ($add != null) {
-                $tab = [
-                    "id" => $quiz->getId(),
-                    "name" => $quiz->getName(),
-                    "popularity" => $quiz->getPopularity() != null ? $quiz->getPopularity() : null,
-                    "media" => $quiz->getMedia() ? $quiz->getMedia()->getPath() : null
-                ];
-                if ($quiz->getIsValidated() != null) {
-                    $tab["isValidated"] = [
-                        "year" => (int)$user->getBirthDate()->format("Y"),
-                        "month" => (int)$user->getBirthDate()->format("m"),
-                        "day" => (int)$user->getBirthDate()->format("d")
-                    ];
-                }
-                array_push($res, $tab);
-            }
+        foreach ($quizService->getQuizNotFinished($user) as $quiz) {
+            $quizNotFinished[] = $this->parseToArrayQuiz($quiz, $user);
         }
-        return new JsonResponse($res, 200);
-    }
-
-    /**
-     * @Route("/{user}/quiz/shared")
-     */
-    public function getQuizSharedAction(Request $request, $user)
-    {
-        $user = $this->em()->getRepository('QuizzyBundle:User')->find($user);
-        $quizShared = $user->getQuizShared();
-        $res = [];
-        foreach ($quizShared as $quiz) {
-
-            if ($quiz != null) {
-                $tab = [
-                    "id" => $quiz->getId(),
-                    "name" => $quiz->getName(),
-                    "popularity" => $quiz->getPopularity() != null ? $quiz->getPopularity() : null,
-                    "media" => $quiz->getMedia() ? $quiz->getMedia()->getPath() : null
-                ];
-                if ($quiz->getIsValidated() != null) {
-                    $tab["isValidated"] = [
-                        "year" => (int)$user->getBirthDate()->format("Y"),
-                        "month" => (int)$user->getBirthDate()->format("m"),
-                        "day" => (int)$user->getBirthDate()->format("d")
-                    ];
-                }
-                array_push($res, $tab);
-            }
+        foreach ($user->getQuizShared() as $quiz) {
+            $quizShared[] = $this->parseToArrayQuiz($quiz, $user);
         }
-        return new JsonResponse($res, 200);
 
+        return new JsonResponse([
+           'quiz_not_finished' => $quizNotFinished,
+           'quiz_shared' => $quizShared,
+           'friends_request_counter' => count($friendService->getFriendsRequestByUser($user))
+        ], 200);
     }
-
 
     /**
      * @Route("/{user}/quiz/new", requirements={"user" = "\d+"})
@@ -249,6 +208,33 @@ class QuizController extends Controller
         return new JsonResponse($res, 200);
     }
 
+    /**
+     * @param Quiz $quiz
+     * @param User $user
+     * @return array
+     */
+    private function parseToArrayQuiz(Quiz $quiz, User $user)
+    {
+        $tab = [
+            "id" => $quiz->getId(),
+            "name" => $quiz->getName(),
+            "popularity" => $quiz->getPopularity() != null ? $quiz->getPopularity() : null,
+            "media" => $quiz->getMedia() ? $quiz->getMedia()->getPath() : null
+        ];
+        if ($quiz->getIsValidated() != null) {
+            $tab["isValidated"] = [
+                "year" => (int)$user->getBirthDate()->format("Y"),
+                "month" => (int)$user->getBirthDate()->format("m"),
+                "day" => (int)$user->getBirthDate()->format("d")
+            ];
+        }
+
+        return $tab;
+    }
+
+    /**
+     * @return mixed
+     */
     private function em()
     {
         return $this->getDoctrine()->getEntityManager();
