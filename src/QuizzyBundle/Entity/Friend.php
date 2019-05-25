@@ -24,13 +24,13 @@ class Friend
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="QuizzyBundle\Entity\User")
+     * @ORM\ManyToOne(targetEntity="QuizzyBundle\Entity\User", inversedBy="friendByUserSender")
      * @ORM\JoinColumn(name="user_sender", referencedColumnName="id", nullable=false)
      */
     private $user_sender;
 
     /**
-     * @ORM\ManyToOne(targetEntity="QuizzyBundle\Entity\User")
+     * @ORM\ManyToOne(targetEntity="QuizzyBundle\Entity\User", inversedBy="friendByUser")
      * @ORM\JoinColumn(name="user", referencedColumnName="id", nullable=false)
      */
     private $user;

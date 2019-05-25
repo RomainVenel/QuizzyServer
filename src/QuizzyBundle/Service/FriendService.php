@@ -10,6 +10,7 @@ use QuizzyBundle\Entity\User;
 class FriendService
 {
     const REFERENCE = "quizzy.friend_service";
+
     protected $em;
 
     /**
@@ -49,10 +50,25 @@ class FriendService
     }
 
     /**
+     * @param User $user
+     * @param $search
+     * @return mixed
+     */
+    public function getFriendsListCanBeAdd(User $user, $search)
+    {
+        return $this->getUserRepository()->getFriendsListCanBeAdd($user, $search);
+    }
+
+    /**
      * @return \Doctrine\ORM\EntityRepository
      */
     private function getFriendRepository()
     {
         return $this->em->getRepository(Friend::REFERENCE);
+    }
+
+    private function getUserRepository()
+    {
+        return $this->em->getRepository(User::REFERENCE);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace QuizzyBundle\Repository;
 
+use QuizzyBundle\Entity\User;
+
 /**
  * UserRepository
  *
@@ -10,4 +12,35 @@ namespace QuizzyBundle\Repository;
  */
 class UserRepository extends \Doctrine\ORM\EntityRepository
 {
+    /**
+     * @param User $user
+     * @param $search
+     * @return array
+     */
+    public function getFriendsListCanBeAdd(User $user, $search)
+    {
+        $dql = "
+            SELECT u
+            FROM QuizzyBundle:User u
+            WHERE u NOT IN (
+                SELECT uu
+                FROM QuizzyBundle:User uu
+                LEFT JOIN uu.friendByUserSender fus
+                LEFT JOIN uu.friendByUser fu
+                WHERE (fus.user_sender = uu AND fus.user = :user)
+                OR (fu.user_sender = :user AND fu.user = uu)
+            )
+            AND u != :user
+        ";
+
+        $parameters = ['user' => $user];
+        if ($search != null) {
+            $dql .= " AND (LOWER(u.username) like :search or LOWER(u.email) like :search)";
+            $parameters['search'] = '%' . strtolower(addslashes($search)) . '%';
+        }
+
+        $query = $this->_em->createQuery($dql);
+        $query->setParameters($parameters);
+        return $query->getResult();
+    }
 }

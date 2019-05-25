@@ -95,7 +95,7 @@ class PartController extends Controller
 
         if (!empty($request->request->get('media'))) {
             $media = new Media();
-            $media->setPath($imageService->saveImage($request->request->get('media'), "_part_img.jpeg"));
+            $media->setPath($imageService->saveImage($request->request->get('media'), "_user_profil.jpeg"));
             $part->setMedia($media);
 
             $this->em()->persist($media);

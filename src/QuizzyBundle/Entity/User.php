@@ -81,6 +81,18 @@ class User
     private $QuizShared;
 
     /**
+     * @var ArrayCollection|Friend[]
+     * @ORM\OneToMany(targetEntity="QuizzyBundle\Entity\Friend", mappedBy="user_sender", fetch="EXTRA_LAZY")
+     */
+    protected $friendByUserSender;
+
+    /**
+     * @var ArrayCollection|Friend[]
+     * @ORM\OneToMany(targetEntity="QuizzyBundle\Entity\Friend", mappedBy="user", fetch="EXTRA_LAZY")
+     */
+    protected $friendByUser;
+
+    /**
      * Get id
      *
      * @return int
@@ -298,4 +310,71 @@ class User
         return $this->QuizShared;
     }
 
+    /**
+     * Add friendByUserSender
+     *
+     * @param \QuizzyBundle\Entity\Friend $friendByUserSender
+     *
+     * @return User
+     */
+    public function addFriendByUserSender(\QuizzyBundle\Entity\Friend $friendByUserSender)
+    {
+        $this->friendByUserSender[] = $friendByUserSender;
+
+        return $this;
+    }
+
+    /**
+     * Remove friendByUserSender
+     *
+     * @param \QuizzyBundle\Entity\Friend $friendByUserSender
+     */
+    public function removeFriendByUserSender(\QuizzyBundle\Entity\Friend $friendByUserSender)
+    {
+        $this->friendByUserSender->removeElement($friendByUserSender);
+    }
+
+    /**
+     * Get friendByUserSender
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getFriendByUserSender()
+    {
+        return $this->friendByUserSender;
+    }
+
+    /**
+     * Add friendByUser
+     *
+     * @param \QuizzyBundle\Entity\Friend $friendByUser
+     *
+     * @return User
+     */
+    public function addFriendByUser(\QuizzyBundle\Entity\Friend $friendByUser)
+    {
+        $this->friendByUser[] = $friendByUser;
+
+        return $this;
+    }
+
+    /**
+     * Remove friendByUser
+     *
+     * @param \QuizzyBundle\Entity\Friend $friendByUser
+     */
+    public function removeFriendByUser(\QuizzyBundle\Entity\Friend $friendByUser)
+    {
+        $this->friendByUser->removeElement($friendByUser);
+    }
+
+    /**
+     * Get friendByUser
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getFriendByUser()
+    {
+        return $this->friendByUser;
+    }
 }
