@@ -31,8 +31,8 @@ class QuestionCompletionController extends Controller
         $this->em()->flush();
 
         $res = [
-            "id" => $questionCompletion->getId()
-            "score" => $questionCompletion->getScore();
+            "id" => $questionCompletion->getId(),
+            "score" => $questionCompletion->getScore()
         ];
         return new JsonResponse($res, 200);
     }

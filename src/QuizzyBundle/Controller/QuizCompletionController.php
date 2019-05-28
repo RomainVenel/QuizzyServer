@@ -22,7 +22,7 @@ class QuizCompletionController extends Controller
     {
 
         $user     = $this->em()->getRepository('QuizzyBundle:User')->find($user);
-        $question = $this->em()->getRepository('QuizzyBundle:Question')->find($question);
+        $quiz = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
 
         $quizCompletion = new QuizCompletion();
         $quizCompletion->setUser($user);
@@ -36,5 +36,36 @@ class QuizCompletionController extends Controller
             "id" => $quizCompletion->getId()
         ];
         return new JsonResponse($res, 200);
+    }
+
+    /**
+     * @Route("/{user}/{quiz}/quizCompletion/get", requirements={"user" = "\d+"})
+     */
+    public function getQuizCompletionAction(Request $request, $user, $quiz)
+    {
+
+        $user     = $this->em()->getRepository('QuizzyBundle:User')->find($user);
+        $quiz = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
+        $qc = $this->em()->getRepository('QuizzyBundle:QuizCompletion')->findOneBy([
+            'user' => $user,
+            'quiz' => $quiz,
+        ]);
+
+        $tabQc = [];
+        $tabQc['id']   = $qc->getId();
+        $tabQc['user'] = $qc->getUser()->getId();
+        $tabQc['quiz'] = $qc->getQuiz()->getId();
+
+        $res = [
+            "qc" => $tabQc
+        ];
+
+        return new JsonResponse($res, 200);
+
+    }
+
+    private function em()
+    {
+        return $this->getDoctrine()->getEntityManager();
     }
 }
