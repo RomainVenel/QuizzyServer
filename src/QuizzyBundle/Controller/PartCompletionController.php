@@ -32,8 +32,13 @@ class PartCompletionController extends Controller
 
         $this->em()->flush();
 
+        $tabPc = [];
+        $tabPc['id']   = $partCompletion->getId();
+        $tabPc['part'] = $partCompletion->getPart()->getId();
+        $tabPc['qc']   = $partCompletion->getQuizCompletion()->getId();
+
         $res = [
-            "id" => $partCompletion->getId()
+            "qc" => $tabPc
         ];
         return new JsonResponse($res, 200);
     }
