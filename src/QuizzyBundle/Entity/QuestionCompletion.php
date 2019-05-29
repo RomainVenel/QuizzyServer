@@ -31,7 +31,7 @@ class QuestionCompletion
     /**
      * @var int
      *
-     * @ORM\Column(name="timer", type="integer")
+     * @ORM\Column(name="timer", type="integer", nullable=true)
      */
     private $timer;
 

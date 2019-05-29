@@ -15,14 +15,15 @@ class QuestionCompletionController extends Controller
 {
 	
 	/**
-     * @Route("/partCompletion/{partCompletion}/questionCompletion/new", requirements={"partCompletion" = "\d+"})
+     * @Route("/partCompletion/{partCompletion}/question/{question}/score/{score}/questionCompletion/new", requirements={"partCompletion" = "\d+"})
      */
-    public function newQuestionCompletionAction(Request $request, $partCompletion, $question)
+    public function newQuestionCompletionAction(Request $request, $partCompletion, $question, $score)
     {
         $partCompletion = $this->em()->getRepository('QuizzyBundle:PartCompletion')->find($partCompletion);
+        $question = $this->em()->getRepository('QuizzyBundle:Question')->find($question);
 
         $questionCompletion = new QuestionCompletion();
-        $questionCompletion->setScore($request->request->get('score'));
+        $questionCompletion->setScore($score);
         $questionCompletion->setPartCompletion($partCompletion);
         $questionCompletion->setQuestion($question);
 
@@ -30,10 +31,20 @@ class QuestionCompletionController extends Controller
 
         $this->em()->flush();
 
+        $tabQc = [];
+        $tabQc['id']       = $questionCompletion->getId();
+        $tabQc['score']    = $questionCompletion->getScore();
+        $tabQc['pc']       = $questionCompletion->getPartCompletion()->getId();
+        $tabQc['question'] = $questionCompletion->getQuestion()->getId();
+
         $res = [
-            "id" => $questionCompletion->getId(),
-            "score" => $questionCompletion->getScore()
+            "qc" => $tabQc
         ];
         return new JsonResponse($res, 200);
+    }
+
+    private function em()
+    {
+        return $this->getDoctrine()->getEntityManager();
     }
 }
