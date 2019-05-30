@@ -146,6 +146,10 @@ class QuizController extends Controller
         $quiz   = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
         $status = true;
 
+        if($quiz->getParts()->count() == 0) {
+            $status = false;
+        }
+
         foreach ($quiz->getParts() as $part) {
             if (!$part->getName() || $part->getQuestions()->count() == 0) {
                 $status = false;
