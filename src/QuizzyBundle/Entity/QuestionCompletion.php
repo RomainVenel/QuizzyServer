@@ -24,13 +24,6 @@ class QuestionCompletion
     /**
      * @var int
      *
-     * @ORM\Column(name="score", type="integer")
-     */
-    private $score;
-
-    /**
-     * @var int
-     *
      * @ORM\Column(name="timer", type="integer", nullable=true)
      */
     private $timer;
@@ -55,30 +48,6 @@ class QuestionCompletion
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Set score
-     *
-     * @param integer $score
-     *
-     * @return QuestionCompletion
-     */
-    public function setScore($score)
-    {
-        $this->score = $score;
-
-        return $this;
-    }
-
-    /**
-     * Get score
-     *
-     * @return int
-     */
-    public function getScore()
-    {
-        return $this->score;
     }
 
     /**

@@ -16,16 +16,44 @@ class AnswerCompletionController extends Controller
 {
 	
 	/**
-     * @Route("/questionCompletion/{questionCompletion}/answer/{answer}/answerCompletion/new", requirements={"questionCompletion" = "\d+"})
+     * @Route("/questionCompletion/{questionCompletionGiven}/answer/{answerGiven}/answerCompletion/new", requirements={"questionCompletionGiven" = "\d+"})
      */
-    public function newAnswerCompletionAction(Request $request, $questionCompletion, $answer)
+    public function newAnswerCompletionAction(Request $request, $questionCompletionGiven, $answerGiven)
     {
-        $questionCompletion = $this->em()->getRepository('QuizzyBundle:QuestionCompletion')->find($questionCompletion);
-        $answer = $this->em()->getRepository('QuizzyBundle:Answer')->find($answer);
+
+        $questionCompletionGiven = $this->em()->getRepository('QuizzyBundle:QuestionCompletion')->find($questionCompletionGiven);
+
+        $answerGiven = $this->em()->getRepository('QuizzyBundle:Answer')->find($answerGiven);
+        
+        $qc = $this->em()->getRepository('QuizzyBundle:QuestionCompletion')->findOneBy([
+            'partCompletion' => $questionCompletionGiven->getPartCompletion(),
+            'question' => $answerGiven->getQuestion(),
+        ]);
+
+        $ac = $this->em()->getRepository('QuizzyBundle:AnswerCompletion')->findOneBy([
+            'questionCompletion' => $qc
+        ]);
+
+        if (isset($ac)) {
+            if (isset($qc)) {
+                $this->em()->remove($ac);
+                $this->em()->remove($qc);
+            }else {
+                $this->em()->remove($ac);
+            }
+        }
+
+        $this->em()->flush();
+
+        $answerGiven = $this->em()->getRepository('QuizzyBundle:Answer')->find($answerGiven);
+
+        $questionCompletion = new QuestionCompletion();
+        $questionCompletion->setPartCompletion($questionCompletionGiven->getPartCompletion());
+        $questionCompletion->setQuestion($answerGiven->getQuestion());
 
         $answerCompletion = new AnswerCompletion();
-        $answerCompletion->setQuestionCompletion($questionCompletion);
-        $answerCompletion->setAnswer($answer);
+        $answerCompletion->setQuestionCompletion($questionCompletionGiven);
+        $answerCompletion->setAnswer($answerGiven);
 
         $this->em()->persist($answerCompletion);
 
@@ -34,12 +62,45 @@ class AnswerCompletionController extends Controller
         $tabAc = [];
         $tabAc['id']       = $answerCompletion->getId();
         $tabAc['qc']       = $answerCompletion->getQuestionCompletion()->getId();
-        $tabAc['answer'] = $answerCompletion->getAnswer()->getId();
+        $tabAc['answer']   = $answerCompletion->getAnswer()->getId();
 
         $res = [
-            "qc" => $tabAc
+            "ac" => $tabAc
         ];
         return new JsonResponse($res, 200);
+    }
+
+    /**
+     * @Route("/questionCompletion/{questionCompletion}/answer/{answer}/score/{score}/answerCompletion/setScore", requirements={"questionCompletion" = "\d+"})
+     */
+    public function setScoreForAnswerCompletionAction(Request $request, $questionCompletion, $answer, $score)
+    {
+
+        $questionCompletion     = $this->em()->getRepository('QuizzyBundle:QuestionCompletion')->find($questionCompletion);
+        $answer = $this->em()->getRepository('QuizzyBundle:Answer')->find($answer);
+        $ac = $this->em()->getRepository('QuizzyBundle:AnswerCompletion')->findOneBy([
+            'questionCompletion' => $questionCompletion,
+            'answer' => $answer,
+        ]);
+
+        $ac->setScore($score);
+
+        $this->em()->persist($ac);
+
+        $this->em()->flush();
+        
+        $tabAc = [];
+        $tabAc['id']    = $ac->getId();
+        $tabAc['qc']  = $ac->getQuestionCompletion()->getId();
+        $tabAc['answer']  = $ac->getAnswer()->getId();
+        $tabAc['score'] = $ac->getScore();
+
+        $res = [
+            "ac" => $tabAc
+        ];
+
+        return new JsonResponse($res, 200);
+
     }
 
     private function em()

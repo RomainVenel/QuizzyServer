@@ -34,6 +34,13 @@ class AnswerCompletion
     private $answer;
 
     /**
+     * @var int
+     *
+     * @ORM\Column(name="score", type="integer", nullable=true)
+     */
+    private $score;
+
+    /**
      * Get id
      *
      * @return int
@@ -89,6 +96,30 @@ class AnswerCompletion
     public function getAnswer()
     {
         return $this->answer;
+    }
+
+    /**
+     * Set score
+     *
+     * @param integer $score
+     *
+     * @return QuestionCompletion
+     */
+    public function setScore($score)
+    {
+        $this->score = $score;
+
+        return $this;
+    }
+
+    /**
+     * Get score
+     *
+     * @return int
+     */
+    public function getScore()
+    {
+        return $this->score;
     }
 
 }

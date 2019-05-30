@@ -15,25 +15,14 @@ class QuestionCompletionController extends Controller
 {
 	
 	/**
-     * @Route("/partCompletion/{partCompletion}/question/{question}/score/{score}/questionCompletion/new", requirements={"partCompletion" = "\d+"})
+     * @Route("/partCompletion/{partCompletion}/question/{question}/questionCompletion/new", requirements={"partCompletion" = "\d+"})
      */
-    public function newQuestionCompletionAction(Request $request, $partCompletion, $question, $score)
+    public function newQuestionCompletionAction(Request $request, $partCompletion, $question)
     {
         $partCompletion = $this->em()->getRepository('QuizzyBundle:PartCompletion')->find($partCompletion);
         $question = $this->em()->getRepository('QuizzyBundle:Question')->find($question);
-        $qc = $this->em()->getRepository('QuizzyBundle:QuestionCompletion')->findOneBy([
-            'partCompletion' => $partCompletion,
-            'question' => $question,
-        ]);
-
-        if (isset($qc)) {
-            $this->em()->remove($qc);
-            $this->em()->flush();
-
-        }
 
         $questionCompletion = new QuestionCompletion();
-        $questionCompletion->setScore($score);
         $questionCompletion->setPartCompletion($partCompletion);
         $questionCompletion->setQuestion($question);
 
@@ -43,7 +32,6 @@ class QuestionCompletionController extends Controller
 
         $tabQc = [];
         $tabQc['id']       = $questionCompletion->getId();
-        $tabQc['score']    = $questionCompletion->getScore();
         $tabQc['pc']       = $questionCompletion->getPartCompletion()->getId();
         $tabQc['question'] = $questionCompletion->getQuestion()->getId();
 

@@ -52,9 +52,9 @@ class QuizCompletionController extends Controller
         ]);
 
         $tabQc = [];
-        $tabQc['id']   = $qc->getId();
-        $tabQc['user'] = $qc->getUser()->getId();
-        $tabQc['quiz'] = $qc->getQuiz()->getId();
+        $tabQc['id']    = $qc->getId();
+        $tabQc['user']  = $qc->getUser()->getId();
+        $tabQc['quiz']  = $qc->getQuiz()->getId();
 
         $res = [
             "qc" => $tabQc

@@ -29,7 +29,6 @@ class PartCompletionController extends Controller
         $partCompletion->setQuizCompletion($quizCompletion);
 
         $this->em()->persist($partCompletion);
-
         $this->em()->flush();
 
         $tabPc = [];
