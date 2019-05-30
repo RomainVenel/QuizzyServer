@@ -43,6 +43,27 @@ class QuestionCompletionController extends Controller
         return new JsonResponse($res, 200);
     }
 
+    /**
+     * @Route("/partCompletion/{partCompletion}/question/{question}/questionCompletion/remove", requirements={"partCompletion" = "\d+"})
+     */
+    public function removeQuestionCompletionAction(Request $request, $partCompletion, $question)
+    {
+        $partCompletion = $this->em()->getRepository('QuizzyBundle:PartCompletion')->find($partCompletion);
+        $question = $this->em()->getRepository('QuizzyBundle:Question')->find($question);
+        $qc = $this->em()->getRepository('QuizzyBundle:QuestionCompletion')->findOneBy([
+            'partCompletion' => $partCompletion,
+            'question' => $question,
+        ]);
+
+        if (isset($qc)) {
+            $this->em()->remove($qc);
+            $this->em()->flush();
+
+        }
+
+        return new JsonResponse([], 200);
+    }
+
     private function em()
     {
         return $this->getDoctrine()->getEntityManager();

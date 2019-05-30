@@ -43,6 +43,32 @@ class PartCompletionController extends Controller
         return new JsonResponse($res, 200);
     }
 
+    /**
+     * @Route("/{part}/{quizCompletion}/partCompletion/get", requirements={"part" = "\d+"})
+     */
+    public function getPartCompletionAction(Request $request, $part, $quizCompletion)
+    {
+
+        $part           = $this->em()->getRepository('QuizzyBundle:Part')->find($part);
+        $quizCompletion = $this->em()->getRepository('QuizzyBundle:QuizCompletion')->find($quizCompletion);
+        $pc = $this->em()->getRepository('QuizzyBundle:PartCompletion')->findOneBy([
+            'part' => $part,
+            'quizCompletion' => $quizCompletion,
+        ]);
+
+        $tabPc = [];
+        $tabPc['id']   = $pc->getId();
+        $tabPc['part'] = $pc->getPart()->getId();
+        $tabPc['qc'] = $pc->getQuizCompletion()->getId();
+
+        $res = [
+            "pc" => $tabPc
+        ];
+
+        return new JsonResponse($res, 200);
+
+    }
+
     private function em()
     {
         return $this->getDoctrine()->getEntityManager();
