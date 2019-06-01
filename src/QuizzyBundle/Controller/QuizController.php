@@ -32,12 +32,18 @@ class QuizController extends Controller
             $quizNotFinished[] = $this->parseToArrayQuiz($quiz, $user);
         }
         foreach ($user->getQuizShared() as $quiz) {
-            $quizShared[] = $this->parseToArrayQuiz($quiz, $user);
+            $quizCompletion = $this->em()->getRepository('QuizzyBundle:QuizCompletion')->findOneBy(['user' => $user, 'quiz' => $quiz]);
+            if ($quizCompletion) {
+                $quizCompleted[] = $this->parseToArrayQuiz($quiz, $user);
+            }else {
+                $quizShared[] = $this->parseToArrayQuiz($quiz, $user);
+            }
         }
 
         return new JsonResponse([
            'quiz_not_finished' => $quizNotFinished,
            'quiz_shared' => $quizShared,
+           'quiz_completed' => $quizCompleted,
            'friends_request_counter' => count($friendService->getFriendsRequestByUser($user))
         ], 200);
     }
