@@ -41,6 +41,12 @@ class QuestionCompletion
     private $question;
 
     /**
+     * @var ArrayCollection|AnswerCompletion[]
+     * @ORM\OneToMany(targetEntity="QuizzyBundle\Entity\AnswerCompletion", mappedBy="questionCompletion", fetch="EXTRA_LAZY")
+     */
+    protected $answersCompletion;
+
+    /**
      * Get id
      *
      * @return int
@@ -122,4 +128,45 @@ class QuestionCompletion
         return $this->question;
     }
 
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->answersCompletion = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add answersCompletion
+     *
+     * @param \QuizzyBundle\Entity\AnswerCompletion $answersCompletion
+     *
+     * @return QuestionCompletion
+     */
+    public function addAnswersCompletion(\QuizzyBundle\Entity\AnswerCompletion $answersCompletion)
+    {
+        $this->answersCompletion[] = $answersCompletion;
+
+        return $this;
+    }
+
+    /**
+     * Remove answersCompletion
+     *
+     * @param \QuizzyBundle\Entity\AnswerCompletion $answersCompletion
+     */
+    public function removeAnswersCompletion(\QuizzyBundle\Entity\AnswerCompletion $answersCompletion)
+    {
+        $this->answersCompletion->removeElement($answersCompletion);
+    }
+
+    /**
+     * Get answersCompletion
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getAnswersCompletion()
+    {
+        return $this->answersCompletion;
+    }
 }

@@ -64,6 +64,36 @@ class QuizCompletionController extends Controller
 
     }
 
+    /**
+     * @Route("/{qc}/quizCompletion/setScore", requirements={"qc" = "\d+"})
+     */
+    public function setQuizCompletionScoreAction(Request $request, $qc)
+    {
+
+        $quizC = $this->em()->getRepository('QuizzyBundle:QuizCompletion')->find($qc);
+
+        $partsC = $quizC->getPartsCompletion();
+
+        $score = 0;
+
+        foreach ($partsC as $part) {
+            $questionsC = $part->getQuestionsCompletion();
+            foreach ($questionsC as $question) {
+                $answersC = $question->getAnswersCompletion();
+                foreach ($answersC as $answer) {
+                    $score = $score + $answer->getScore();
+                    $quizC->setScore($score);
+                }
+            }
+        }
+
+        $this->em()->persist($quizC);
+        $this->em()->flush();
+
+        return new JsonResponse("ok", 200);
+
+    }
+
     private function em()
     {
         return $this->getDoctrine()->getEntityManager();

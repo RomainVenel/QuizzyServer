@@ -76,17 +76,17 @@ class AnswerCompletionController extends Controller
     public function setScoreForAnswerCompletionAction(Request $request, $questionCompletion, $answer, $score)
     {
 
-        $questionCompletion     = $this->em()->getRepository('QuizzyBundle:QuestionCompletion')->find($questionCompletion);
+
+        $questionCompletion = $this->em()->getRepository('QuizzyBundle:QuestionCompletion')->find($questionCompletion);
         $answer = $this->em()->getRepository('QuizzyBundle:Answer')->find($answer);
         $ac = $this->em()->getRepository('QuizzyBundle:AnswerCompletion')->findOneBy([
             'questionCompletion' => $questionCompletion,
             'answer' => $answer,
-        ]);
+        ]);    
 
         $ac->setScore($score);
-
+    
         $this->em()->persist($ac);
-
         $this->em()->flush();
         
         $tabAc = [];

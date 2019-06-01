@@ -41,6 +41,12 @@ class QuizCompletion
     private $score;
 
     /**
+     * @var ArrayCollection|PartCompletion[]
+     * @ORM\OneToMany(targetEntity="QuizzyBundle\Entity\PartCompletion", mappedBy="quizCompletion", fetch="EXTRA_LAZY")
+     */
+    protected $partsCompletion;
+
+    /**
      * Get id
      *
      * @return int
@@ -122,4 +128,45 @@ class QuizCompletion
         return $this->quiz;
     }
 
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->partsCompletion = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add partsCompletion
+     *
+     * @param \QuizzyBundle\Entity\PartCompletion $partsCompletion
+     *
+     * @return QuizCompletion
+     */
+    public function addPartsCompletion(\QuizzyBundle\Entity\PartCompletion $partsCompletion)
+    {
+        $this->partsCompletion[] = $partsCompletion;
+
+        return $this;
+    }
+
+    /**
+     * Remove partsCompletion
+     *
+     * @param \QuizzyBundle\Entity\PartCompletion $partsCompletion
+     */
+    public function removePartsCompletion(\QuizzyBundle\Entity\PartCompletion $partsCompletion)
+    {
+        $this->partsCompletion->removeElement($partsCompletion);
+    }
+
+    /**
+     * Get partsCompletion
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getPartsCompletion()
+    {
+        return $this->partsCompletion;
+    }
 }
