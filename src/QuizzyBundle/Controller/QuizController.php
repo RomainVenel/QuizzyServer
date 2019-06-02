@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use QuizzyBundle\Entity\Media;
 use QuizzyBundle\Entity\Quiz;
+use QuizzyBundle\Entity\QuizCompletion;
 use QuizzyBundle\Service\ImageService;
 use QuizzyBundle\Service\QuizService;
 
@@ -240,6 +241,55 @@ class QuizController extends Controller
         }
 
         return $tab;
+    }
+
+    /**
+     * @Route("/{user}/{quiz}/score")
+     */
+    public function getQuizScoreAction(Request $request, $user, $quiz)
+    {
+        $quiz = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
+        $user = $this->em()->getRepository(User::REFERENCE)->find($user);
+
+        $quizCompletion = $this->em()->getRepository('QuizzyBundle:QuizCompletion')->findOneBy([
+            'user' => $user,
+            'quiz' => $quiz,
+        ]);
+
+        $partsC = $quizCompletion->getPartsCompletion();
+
+        $score = 0;
+
+        foreach ($partsC as $part) {
+            $questionsC = $part->getQuestionsCompletion();
+            foreach ($questionsC as $question) {
+                $answersC = $question->getAnswersCompletion();
+                foreach ($answersC as $answer) {
+                    $score = $score + $answer->getScore();
+                }
+            }
+        }
+        
+        $parts = $quiz->getParts();
+
+        $maxScore = 0;
+
+        foreach ($parts as $part) {
+            $questions = $part->getQuestions();
+            foreach ($questions as $question) {
+                $maxScore = $maxScore + $question->getMaxScore();
+            }
+        }
+
+        $tabScore = [];
+        $tabScore['score']    = $score;
+        $tabScore['maxScore']  = $maxScore;
+
+        $res = [
+            "score" => $tabScore
+        ];
+
+        return new JsonResponse($res, 200);
     }
 
     /**
