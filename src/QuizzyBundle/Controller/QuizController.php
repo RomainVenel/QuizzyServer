@@ -28,6 +28,7 @@ class QuizController extends Controller
         $quizService = $this->get(QuizService::REFERENCE);
         $quizNotFinished = [];
         $quizShared = [];
+        $quizCompleted = [];
 
         foreach ($quizService->getQuizNotFinished($user) as $quiz) {
             $quizNotFinished[] = $this->parseToArrayQuiz($quiz, $user);
@@ -39,6 +40,15 @@ class QuizController extends Controller
             }else {
                 $quizShared[] = $this->parseToArrayQuiz($quiz, $user);
             }
+        }
+
+        if ($quizCompleted === null) {
+            return new JsonResponse([
+           'quiz_not_finished' => $quizNotFinished,
+           'quiz_shared' => $quizShared,
+           'quiz_completed' => null,
+           'friends_request_counter' => count($friendService->getFriendsRequestByUser($user))
+        ], 200);
         }
 
         return new JsonResponse([
@@ -88,8 +98,33 @@ class QuizController extends Controller
         
         $quiz = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
         $user = $this->em()->getRepository('QuizzyBundle:User')->find($quiz->getUser());
+        $quizCompletions = $this->em()->getRepository('QuizzyBundle:QuizCompletion')->findBy(
+            [
+                'quiz' => $quiz
+            ]
+        );
 
-        $user->removeQuizShared($quiz);
+        foreach ($quizCompletions as $quizC) {
+            $partsC = $quizC->getPartsCompletion();
+            foreach ($partsC as $part) {
+                $questionsC = $part->getQuestionsCompletion();
+                foreach ($questionsC as $question) {
+                    $answersC = $question->getAnswersCompletion();
+                    foreach ($answersC as $answer) {
+                        $this->em()->remove($answer);
+                    }
+                    $this->em()->remove($question);
+                }
+                $this->em()->remove($part);
+            }
+            $this->em()->remove($quizC);   
+        }
+
+        $usersShared = $quiz->getUserShared();
+
+        foreach ($usersShared as $userShared) {
+            $quiz->removeUserShared($userShared);
+        }
 
         foreach ($quiz->getParts() as $part) {
             if ($part->getMedia()) {// on delete l'image si il y en a
@@ -289,6 +324,25 @@ class QuizController extends Controller
             "score" => $tabScore
         ];
 
+        return new JsonResponse($res, 200);
+    }
+
+    /**
+     * @Route("/{user}/{quiz}/share", requirements={"user" = "\d+"})
+     */
+    public function shareQuizAction(Request $request, $user, $quiz)
+    {
+        $quiz = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
+        $user = $this->em()->getRepository(User::REFERENCE)->find($user);
+
+        $user->addQuizShared($quiz);
+
+        $this->em()->persist($user);
+        $this->em()->flush();
+
+        $res = [
+            "id" => $user->getId()
+        ];
         return new JsonResponse($res, 200);
     }
 

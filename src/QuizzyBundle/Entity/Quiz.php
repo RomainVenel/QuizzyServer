@@ -63,6 +63,15 @@ class Quiz
     protected $parts;
 
     /**
+     * @ORM\ManyToMany(targetEntity="User")
+     * @ORM\JoinTable(name="quiz_shared",
+     *      joinColumns={@ORM\JoinColumn(name="quiz_id", referencedColumnName="id")},
+     *      inverseJoinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id")}
+     *      )
+     */
+    private $UserShared;
+
+    /**
      * Get id
      *
      * @return int
@@ -232,5 +241,39 @@ class Quiz
     public function getParts()
     {
         return $this->parts;
+    }
+
+    /**
+     * Add userShared
+     *
+     * @param \QuizzyBundle\Entity\User $userShared
+     *
+     * @return Quiz
+     */
+    public function addUserShared(\QuizzyBundle\Entity\User $userShared)
+    {
+        $this->UserShared[] = $userShared;
+
+        return $this;
+    }
+
+    /**
+     * Remove userShared
+     *
+     * @param \QuizzyBundle\Entity\User $userShared
+     */
+    public function removeUserShared(\QuizzyBundle\Entity\User $userShared)
+    {
+        $this->UserShared->removeElement($userShared);
+    }
+
+    /**
+     * Get userShared
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getUserShared()
+    {
+        return $this->UserShared;
     }
 }
