@@ -335,13 +335,26 @@ class QuizController extends Controller
         $quiz = $this->em()->getRepository('QuizzyBundle:Quiz')->find($quiz);
         $user = $this->em()->getRepository(User::REFERENCE)->find($user);
 
+        $usersSharedWith = $quiz->getUserShared();
+
+
+
+        foreach ($usersSharedWith as $userShared) {
+            if ($user->getId() === $userShared->getId()) {
+                $res = [
+                    "share exist" => "yes"
+                ];
+                return new JsonResponse($res, 200);
+            }
+        }
+
         $user->addQuizShared($quiz);
 
         $this->em()->persist($user);
         $this->em()->flush();
 
         $res = [
-            "id" => $user->getId()
+            "share exist" => "no"
         ];
         return new JsonResponse($res, 200);
     }
