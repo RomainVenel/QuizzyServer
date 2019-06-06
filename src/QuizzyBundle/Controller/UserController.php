@@ -220,6 +220,46 @@ class UserController extends Controller
             ["status" => true], 200);
     }
 
+    /**
+     * @Route("/forget/password")
+     * @return JsonResponse
+     */
+    public function forgetPasswordAction(Request $request)
+    {
+        $username = $request->request->get('username');
+        $birthday = new \DateTime($request->request->get('birthday'));
+        $user = $this->em()->getRepository(User::REFERENCE)->findOneBy(['username' => $username, "birthDate" => $birthday]);
+
+        if (!$user) {
+            return new JsonResponse(["status" => false], 200);
+        }
+
+        $password = $this->generateRandomPassword();
+        $message = \Swift_Message::newInstance()
+            ->setSubject('Votre nouveau mot de passe !')
+            ->setFrom(['quizzyAppli@gmail.com' => "Quizzy"])
+            ->setTo($user->getEmail())
+            ->setBody($this->renderView('Emails/forgetPassword.html.twig', ['user' => $user, 'password' => $password]), 'text/html');
+        $this->get('mailer')->send($message);
+
+        $user->setPassword(md5($password));
+        $this->em()->persist($user);
+        $this->em()->flush();
+
+        return new JsonResponse(["status" => true], 200);
+    }
+
+    private function generateRandomPassword()
+    {
+        $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+        $pass = '';
+        for ($i = 0; $i < 8; $i++) {
+            $pass .= $alphabet[rand(0, strlen($alphabet) - 1)];
+        }
+
+        return $pass;
+    }
+
     private function em()
     {
         return $this->getDoctrine()->getEntityManager();
