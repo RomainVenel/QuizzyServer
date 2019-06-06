@@ -258,6 +258,25 @@ class UserController extends Controller
     }
 
     /**
+     * @Route("/user/{user}/change/password")
+     * @param Request $request
+     * @param $user
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function changePasswordAction(Request $request, $user)
+    {
+        $user = $this->em()->getRepository(User::REFERENCE)->find($user);
+        if ($user) {
+            $user->setPassword($request->request->get('password'));
+            $this->em()->persist($user);
+            $this->em()->flush();
+        }
+
+        return new JsonResponse(["status" => true], 200);
+    }
+
+    /**
      * @return string
      */
     private function generateRandomPassword()
