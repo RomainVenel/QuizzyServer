@@ -3,7 +3,9 @@
 namespace QuizzyBundle\Controller;
 
 use QuizzyBundle\Entity\Friend;
+use QuizzyBundle\Entity\Media;
 use QuizzyBundle\Service\FriendService;
+use QuizzyBundle\Service\ImageService;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -189,35 +191,39 @@ class UserController extends Controller
         $user = $this->em()->getRepository(User::REFERENCE)->find($user);
         $lastName = $request->request->get('last_name');
         $firstName = $request->request->get('first_name');
-        $username = $request->request->get('username');
         $email = $request->request->get('email');
-
-        $usernameExist = $this->em()->getRepository(User::REFERENCE)->findBy(['username' => $username]);
-        if (count($usernameExist) > 0 && !(count($usernameExist) === 1 && $usernameExist[0]->getId() === $user->getId())) {
-            return new JsonResponse([
-                "status" => false,
-                "error" => "username"
-            ]);
-        }
 
         $emailExist = $this->em()->getRepository(User::REFERENCE)->findBy(['email' => $email]);
         if (count($emailExist) > 0 && !(count($emailExist) === 1 && $emailExist[0]->getId() === $user->getId())) {
-            return new JsonResponse([
-                "status" => false,
-                "error" => "email"
-            ]);
+            return new JsonResponse(["status" => false]);
+        }
+
+        $imageService  = $this->get(ImageService::REFERENCE);
+        if ($user->getMedia()) {// on delete l'image si il y a en
+            $imageService->deleteImage($user->getMedia());
+        }
+
+        $user->setMedia(null);
+        if (!empty($request->request->get('media'))) {
+            $media = new Media();
+            $media->setPath($imageService->saveImage($request->request->get('media'), "_user_img.jpeg"));
+            $user->setMedia($media);
+            $this->em()->persist($media);
         }
 
         $user->setLastName($lastName);
         $user->setFirstName($firstName);
-        $user->setUsername($username);
         $user->setEmail($email);
 
         $this->em()->persist($user);
         $this->em()->flush();
 
         return new JsonResponse(
-            ["status" => true], 200);
+            [
+                "status" => true,
+                "media" => $user->getMedia() != null ? $user->getMedia()->getPath() : null
+            ],
+            200);
     }
 
     /**
