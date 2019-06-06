@@ -222,7 +222,9 @@ class UserController extends Controller
 
     /**
      * @Route("/forget/password")
+     * @param Request $request
      * @return JsonResponse
+     * @throws \Exception
      */
     public function forgetPasswordAction(Request $request)
     {
@@ -249,6 +251,9 @@ class UserController extends Controller
         return new JsonResponse(["status" => true], 200);
     }
 
+    /**
+     * @return string
+     */
     private function generateRandomPassword()
     {
         $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
@@ -260,6 +265,9 @@ class UserController extends Controller
         return $pass;
     }
 
+    /**
+     * @return mixed
+     */
     private function em()
     {
         return $this->getDoctrine()->getEntityManager();
